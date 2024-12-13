@@ -188,9 +188,9 @@ TEST_F(SelectionDAGPatternMatchTest, matchTernaryOp) {
   EXPECT_FALSE(sd_match(
       Select, m_VSelect(m_Specific(Cond), m_Specific(V1), m_Specific(V2))));
 
-  EXPECT_TRUE(sd_match(InsertSubvector, m_InsertSubvector (m_value(),
-                                                           m_value(), 
-                                                           m_value())));
+  EXPECT_TRUE(sd_match(InsertSubvector, m_InsertSubvector (m_Value(),
+                                                           m_Value(), 
+                                                           m_Value())));
   EXPECT_TRUE(sd_match(InsertSubvector, m_InsertSubvector (m_Specific(V1),
                                                            m_Specific(V2), 
                                                            m_Specific(Idx0))));
