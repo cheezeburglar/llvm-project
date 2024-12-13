@@ -138,9 +138,7 @@ TEST_F(SelectionDAGPatternMatchTest, matchTernaryOp) {
 
   auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
   auto ScalableVInt32VT = EVT::getVectorVT(Context, Int32VT, 4, true);
-//  auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 8);
   auto Idx0 = DAG->getVectorIdxConstant(0, DL);
-  auto Idx4 = DAG->getVectorIdxConstant(4, DL);
   SDValue V1 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 6, VInt32VT);
   SDValue V2 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 7, VInt32VT);
   SDValue V3 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 8, ScalableVInt32VT);
@@ -190,6 +188,9 @@ TEST_F(SelectionDAGPatternMatchTest, matchTernaryOp) {
   EXPECT_FALSE(sd_match(
       Select, m_VSelect(m_Specific(Cond), m_Specific(V1), m_Specific(V2))));
 
+  EXPECT_TRUE(sd_match(InsertSubvector, m_InsertSubvector (m_value(),
+                                                           m_value(), 
+                                                           m_value())));
   EXPECT_TRUE(sd_match(InsertSubvector, m_InsertSubvector (m_Specific(V1),
                                                            m_Specific(V2), 
                                                            m_Specific(Idx0))));
@@ -200,7 +201,7 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
   auto Int32VT = EVT::getIntegerVT(Context, 32);
   auto Float32VT = EVT::getFloatingPointVT(32);
   auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
-  auto Idx2 = DAG->getVectorIdxConstant(2, DL);
+  auto Idx2 = DAG->getVectorIdxConstant(1, DL);
 
   SDValue Op0 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 1, Int32VT);
   SDValue Op1 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 2, Int32VT);
