@@ -790,6 +790,20 @@ inline BinaryOpc_match<LHS, RHS> m_FRem(const LHS &L, const RHS &R) {
   return BinaryOpc_match<LHS, RHS>(ISD::FREM, L, R);
 }
 
+// TODO :
+
+template <typename LHS, typename RHS>
+inline BinaryOpc_match<LHS, RHS>
+m_ExtractSubvector (const LHS &L, const RHS &R) {
+  return BinaryOpc_match<LHS, RHS> (ISD::EXTRACT_SUBVECTOR, L, R);
+}
+
+template <typename LHS, typename RHS, typename IDX>
+inline TernaryOpc_match<LHS, RHS, IDX>
+m_InsertSubvector (const LHS &L, const RHS &R, const IDX &I) {
+  return TernaryOpc_match<LHS, RHS, IDX> (ISD::INSERT_SUBVECTOR, L, R, I);
+}
+
 // === Unary operations ===
 template <typename Opnd_P, bool ExcludeChain = false> struct UnaryOpc_match {
   unsigned Opcode;

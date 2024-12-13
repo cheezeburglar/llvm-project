@@ -137,9 +137,24 @@ TEST_F(SelectionDAGPatternMatchTest, matchTernaryOp) {
   SDValue Select = DAG->getSelect(DL, MVT::i1, Cond, T, F);
 
   auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
+  auto ScalableVInt32VT = EVT::getVectorVT(Context, Int32VT, 4, true);
+//  auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 8);
+  auto Idx0 = DAG->getVectorIdxConstant(0, DL);
+  auto Idx4 = DAG->getVectorIdxConstant(4, DL);
   SDValue V1 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 6, VInt32VT);
   SDValue V2 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 7, VInt32VT);
+  SDValue V3 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 8, ScalableVInt32VT);
   SDValue VSelect = DAG->getNode(ISD::VSELECT, DL, VInt32VT, Cond, V1, V2);
+  SDValue InsertSubvector = DAG->getNode(ISD::INSERT_SUBVECTOR, DL, VInt32VT, V1, V2, Idx0);
+
+//  //This should break because inserting scalable into Fixed length is
+//  //unsupported.
+//  SDValue UndefinedInsertSubvector = DAG->getNode(ISD::INSERT_SUBVECTOR,
+//                                                  DL, ScalableVINT32VT, V3, V1, Idx0)
+//
+//  //This should break due to invalid indices
+//  SDValue UndefinedInsertSubvector = DAG->getNode(ISD::INSERT_SUBVECTOR, 
+//                                                  DL, VInt32VT, V1, V2, Idx4);
 
   using namespace SDPatternMatch;
   ISD::CondCode CC;
@@ -174,12 +189,18 @@ TEST_F(SelectionDAGPatternMatchTest, matchTernaryOp) {
       VSelect, m_VSelect(m_Specific(Cond), m_Specific(V1), m_Specific(V2))));
   EXPECT_FALSE(sd_match(
       Select, m_VSelect(m_Specific(Cond), m_Specific(V1), m_Specific(V2))));
+
+  EXPECT_TRUE(sd_match(InsertSubvector, m_InsertSubvector (m_Specific(V1),
+                                                           m_Specific(V2), 
+                                                           m_Specific(Idx0))));
 }
 
 TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
   SDLoc DL;
   auto Int32VT = EVT::getIntegerVT(Context, 32);
   auto Float32VT = EVT::getFloatingPointVT(32);
+  auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
+  auto Idx2 = DAG->getVectorIdxConstant(2, DL);
 
   SDValue Op0 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 1, Int32VT);
   SDValue Op1 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 2, Int32VT);
@@ -220,6 +241,10 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
 
   SDValue SFAdd = DAG->getNode(ISD::STRICT_FADD, DL, {Float32VT, MVT::Other},
                                {DAG->getEntryNode(), Op2, Op2});
+  SDValue Vec = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 4, VInt32VT);
+  SDValue SubVec = DAG->getNode(ISD::EXTRACT_SUBVECTOR, DL, VInt32VT, Vec,
+                                Idx2);
+
 
   using namespace SDPatternMatch;
   EXPECT_TRUE(sd_match(Sub, m_BinOp(ISD::SUB, m_Value(), m_Value())));
@@ -271,6 +296,11 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
   EXPECT_TRUE(sd_match(UMin, m_UMinLike(m_Value(), m_Value())));
   EXPECT_TRUE(sd_match(UMinLikeULT, m_UMinLike(m_Value(), m_Value())));
   EXPECT_TRUE(sd_match(UMinLikeULE, m_UMinLike(m_Value(), m_Value())));
+
+  EXPECT_TRUE(sd_match(SubVec, m_ExtractSubvector(m_Value(), m_Value())));
+  EXPECT_TRUE(sd_match(SubVec, m_BinOp(ISD::EXTRACT_SUBVECTOR, m_Value(), m_Value())));
+  EXPECT_TRUE(sd_match(SubVec, m_ExtractSubvector(m_Specific(Vec), m_Specific(Idx2))));
+  EXPECT_TRUE(sd_match(SubVec, m_BinOp(ISD::EXTRACT_SUBVECTOR, m_Specific(Vec), m_Specific(Idx2))));
 
   SDValue BindVal;
   EXPECT_TRUE(sd_match(SFAdd, m_ChainedBinOp(ISD::STRICT_FADD, m_Value(BindVal),
