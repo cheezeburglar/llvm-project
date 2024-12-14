@@ -200,7 +200,8 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
   SDLoc DL;
   auto Int32VT = EVT::getIntegerVT(Context, 32);
   auto Float32VT = EVT::getFloatingPointVT(32);
-  auto VInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
+  auto BigVInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
+  auto SmallVInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
   auto Idx2 = DAG->getVectorIdxConstant(1, DL);
 
   SDValue Op0 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 1, Int32VT);
@@ -242,8 +243,8 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
 
   SDValue SFAdd = DAG->getNode(ISD::STRICT_FADD, DL, {Float32VT, MVT::Other},
                                {DAG->getEntryNode(), Op2, Op2});
-  SDValue Vec = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 40, VInt32VT);
-  SDValue SubVec = DAG->getNode(ISD::EXTRACT_SUBVECTOR, DL, VInt32VT, Vec,
+  SDValue Vec = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 9, BigVInt32VT);
+  SDValue SubVec = DAG->getNode(ISD::EXTRACT_SUBVECTOR, DL, SmallVInt32VT, Vec,
                                 Idx2);
 
 
