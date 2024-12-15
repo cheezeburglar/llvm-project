@@ -507,6 +507,12 @@ m_VSelect(const T0_P &Cond, const T1_P &T, const T2_P &F) {
   return TernaryOpc_match<T0_P, T1_P, T2_P>(ISD::VSELECT, Cond, T, F);
 }
 
+template <typename LHS, typename RHS, typename IDX>
+inline TernaryOpc_match<LHS, RHS, IDX>
+m_InsertSubvector (const LHS &L, const RHS &R, const IDX &I) {
+  return TernaryOpc_match<LHS, RHS, IDX> (ISD::INSERT_SUBVECTOR, L, R, I);
+}
+
 // === Binary operations ===
 template <typename LHS_P, typename RHS_P, bool Commutable = false,
           bool ExcludeChain = false>
@@ -790,18 +796,10 @@ inline BinaryOpc_match<LHS, RHS> m_FRem(const LHS &L, const RHS &R) {
   return BinaryOpc_match<LHS, RHS>(ISD::FREM, L, R);
 }
 
-// TODO :
-
 template <typename LHS, typename RHS>
 inline BinaryOpc_match<LHS, RHS>
 m_ExtractSubvector (const LHS &L, const RHS &R) {
   return BinaryOpc_match<LHS, RHS> (ISD::EXTRACT_SUBVECTOR, L, R);
-}
-
-template <typename LHS, typename RHS, typename IDX>
-inline TernaryOpc_match<LHS, RHS, IDX>
-m_InsertSubvector (const LHS &L, const RHS &R, const IDX &I) {
-  return TernaryOpc_match<LHS, RHS, IDX> (ISD::INSERT_SUBVECTOR, L, R, I);
 }
 
 // === Unary operations ===
