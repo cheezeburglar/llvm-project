@@ -143,7 +143,7 @@ TEST_F(SelectionDAGPatternMatchTest, matchTernaryOp) {
   SDValue V2 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 7, VInt32VT);
   SDValue V3 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 8, SmallVInt32VT);
   SDValue VSelect = DAG->getNode(ISD::VSELECT, DL, VInt32VT, Cond, V1, V2);
-  SDValue InsertSubvector = DAG->getNode(ISD::INSERT_SUBVECTOR, DL, BigVInt32VT, V2, V3, Idx0);
+  SDValue InsertSubvector = DAG->getNode(ISD::INSERT_SUBVECTOR, DL, VInt32VT, V2, V3, Idx0);
 
   using namespace SDPatternMatch;
   ISD::CondCode CC;
@@ -193,7 +193,7 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
   auto Float32VT = EVT::getFloatingPointVT(32);
   auto BigVInt32VT = EVT::getVectorVT(Context, Int32VT, 8);
   auto SmallVInt32VT = EVT::getVectorVT(Context, Int32VT, 4);
-  auto Idx1 = DAG->getVectorIdxConstant(1, DL);
+  auto Idx0 = DAG->getVectorIdxConstant(0, DL);
 
   SDValue Op0 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 1, Int32VT);
   SDValue Op1 = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 2, Int32VT);
@@ -236,7 +236,7 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
                                {DAG->getEntryNode(), Op2, Op2});
   SDValue Vec = DAG->getCopyFromReg(DAG->getEntryNode(), DL, 9, BigVInt32VT);
   SDValue SubVec = DAG->getNode(ISD::EXTRACT_SUBVECTOR, DL, SmallVInt32VT, Vec,
-                                Idx2);
+                                Idx0);
 
 
   using namespace SDPatternMatch;
@@ -292,8 +292,8 @@ TEST_F(SelectionDAGPatternMatchTest, matchBinaryOp) {
 
   EXPECT_TRUE(sd_match(SubVec, m_ExtractSubvector(m_Value(), m_Value())));
   EXPECT_TRUE(sd_match(SubVec, m_BinOp(ISD::EXTRACT_SUBVECTOR, m_Value(), m_Value())));
-  EXPECT_TRUE(sd_match(SubVec, m_ExtractSubvector(m_Specific(Vec), m_Specific(Idx2))));
-  EXPECT_TRUE(sd_match(SubVec, m_BinOp(ISD::EXTRACT_SUBVECTOR, m_Specific(Vec), m_Specific(Idx2))));
+  EXPECT_TRUE(sd_match(SubVec, m_ExtractSubvector(m_Specific(Vec), m_Specific(Idx0))));
+  EXPECT_TRUE(sd_match(SubVec, m_BinOp(ISD::EXTRACT_SUBVECTOR, m_Specific(Vec), m_Specific(Idx0))));
 
   SDValue BindVal;
   EXPECT_TRUE(sd_match(SFAdd, m_ChainedBinOp(ISD::STRICT_FADD, m_Value(BindVal),
