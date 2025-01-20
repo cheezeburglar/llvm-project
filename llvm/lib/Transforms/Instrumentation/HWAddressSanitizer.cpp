@@ -201,7 +201,7 @@ static cl::opt<float>
 
 static cl::opt<bool>
     ClOptGlobals("hwasan-opt-globals",
-                 cl::desc(),
+                 cl::desc("I don't think we actually need this"),
                  cl::Hidden, cl::init(true));
 
 STATISTIC(NumTotalFuncs, "Number of total funcs");
@@ -871,7 +871,7 @@ bool HWAddressSanitizer::ignoreAccessWithoutRemark(Instruction *Inst,
   }
 
   if (isa<GlobalVariable>(getUnderlyingObject(Ptr))) {
-    if (!(ClOpt && ClGlobals))
+    if (!(ClGlobals))
       return true;
     // TODO: Optimize inbound global accesses, like Asan `instrumentMop`.
   }
