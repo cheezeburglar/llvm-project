@@ -199,6 +199,11 @@ static cl::opt<float>
                      cl::desc("Probability value in the range [0.0, 1.0] "
                               "to keep instrumentation of a function."));
 
+static cl::opt<bool>
+    ClOptGlobals("hwasan-opt-globals",
+                 cl::desc(),
+                 cl::Hidden, cl::init(true));
+
 STATISTIC(NumTotalFuncs, "Number of total funcs");
 STATISTIC(NumInstrumentedFuncs, "Number of instrumented funcs");
 STATISTIC(NumNoProfileSummaryFuncs, "Number of funcs without PS");
@@ -866,7 +871,7 @@ bool HWAddressSanitizer::ignoreAccessWithoutRemark(Instruction *Inst,
   }
 
   if (isa<GlobalVariable>(getUnderlyingObject(Ptr))) {
-    if (!InstrumentGlobals)
+    if (!(ClOpt && ClGlobals))
       return true;
     // TODO: Optimize inbound global accesses, like Asan `instrumentMop`.
   }
