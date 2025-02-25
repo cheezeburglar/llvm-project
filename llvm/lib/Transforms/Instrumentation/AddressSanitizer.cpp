@@ -1342,8 +1342,8 @@ Value *AddressSanitizer::memToShadow(Value *Shadow, IRBuilder<> &IRB) {
 
 bool hackForBug (MemIntrinsic *MI, const Triple &TargetTriple)
 {
-  if (MI->getDestAddress >= 256
-      && TargetTriple.getarch() == Triple::x86_64)
+  if (MI->getDestAddressSpace() >= 256
+      && TargetTriple.getArch() == Triple::x86_64)
     assert (false);
   return true;
 }
