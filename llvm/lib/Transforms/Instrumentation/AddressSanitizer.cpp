@@ -1339,11 +1339,19 @@ Value *AddressSanitizer::memToShadow(Value *Shadow, IRBuilder<> &IRB) {
     return IRB.CreateAdd(Shadow, ShadowBase);
 }
 
+bool hackForBug (MemIntrinsic *MI, const Triple &TargetTriple)
+{
+  if (MI->getDestAddress >= 256
+      && TargetTriple.getarch() == Triple::x86_64)
+    assert (false);
+  return true;
+}
+
 // Instrument memset/memmove/memcpy
 void AddressSanitizer::instrumentMemIntrinsic(MemIntrinsic *MI,
                                               RuntimeCallInserter &RTCI) {
   InstrumentationIRBuilder IRB(MI);
-  if (isa<MemTransferInst>(MI)) {
+  if (isa<MemTransferInst>(MI) && hackForBug(MI, TargetTriple)) {
     RTCI.createRuntimeCall(
         IRB, isa<MemMoveInst>(MI) ? AsanMemmove : AsanMemcpy,
         {IRB.CreateAddrSpaceCast(MI->getOperand(0), PtrTy),
@@ -1856,6 +1864,13 @@ void AddressSanitizer::instrumentAddress(Instruction *OrigIns,
     if (!InsertBefore)
       return;
   }
+
+  // TODO: THORP - asan, tsan, etc intercept generic object's memory, and don't
+    // seem to know about special address spaces. Punt for fs and gs on x86.
+  if (TargetTriple.getArch() == Triple::x86_64)
+    {
+
+    }
 
   InstrumentationIRBuilder IRB(InsertBefore);
   size_t AccessSizeIndex = TypeStoreSizeToSizeIndex(TypeStoreSize);
