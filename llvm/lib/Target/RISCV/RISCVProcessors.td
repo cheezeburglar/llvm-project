@@ -103,9 +103,11 @@ def GENERIC_RV64 : RISCVProcessorModel<"generic-rv64",
 // Support generic for compatibility with other targets. The triple will be used
 // to change to the appropriate rv32/rv64 version.
 def GENERIC : RISCVTuneProcessorModel<"generic", NoSchedModel>, GenericTuneInfo;
+def GENERIC_OOO : RISCVTuneProcessorModel<"generic-ooo", GenericOOOModel>,
+                  GenericTuneInfo;
 
 def MIPS_P8700 : RISCVProcessorModel<"mips-p8700",
-                                     NoSchedModel,
+                                     MIPSP8700Model,
                                      [Feature64Bit,
                                       FeatureStdExtI,
                                       FeatureStdExtM,
@@ -116,7 +118,9 @@ def MIPS_P8700 : RISCVProcessorModel<"mips-p8700",
                                       FeatureStdExtZba,
                                       FeatureStdExtZbb,
                                       FeatureStdExtZifencei,
-                                      FeatureStdExtZicsr],
+                                      FeatureStdExtZicsr,
+                                      FeatureVendorXMIPSCMove,
+                                      FeatureVendorXMIPSLSP],
                                      [TuneMIPSP8700]>;
 
 def ROCKET_RV32 : RISCVProcessorModel<"rocket-rv32",
@@ -321,6 +325,24 @@ def SIFIVE_P470 : RISCVProcessorModel<"sifive-p470", SiFiveP400Model,
                                                   [TuneNoSinkSplatOperands,
                                                    TuneVXRMPipelineFlush])>;
 
+defvar SiFiveP500TuneFeatures = [TuneNoDefaultUnroll,
+                                 TuneConditionalCompressedMoveFusion,
+                                 TuneLUIADDIFusion,
+                                 TuneAUIPCADDIFusion,
+                                 TunePostRAScheduler];
+
+def SIFIVE_P550 : RISCVProcessorModel<"sifive-p550", SiFiveP500Model,
+                                      [Feature64Bit,
+                                       FeatureStdExtI,
+                                       FeatureStdExtZifencei,
+                                       FeatureStdExtM,
+                                       FeatureStdExtA,
+                                       FeatureStdExtF,
+                                       FeatureStdExtD,
+                                       FeatureStdExtC,
+                                       FeatureStdExtZba,
+                                       FeatureStdExtZbb],
+                                      SiFiveP500TuneFeatures>;
 
 def SIFIVE_P670 : RISCVProcessorModel<"sifive-p670", SiFiveP600Model,
                                       !listconcat(RVA22U64Features,
@@ -454,7 +476,7 @@ def SYNTACORE_SCR7 : RISCVProcessorModel<"syntacore-scr7",
                                               [TuneNoDefaultUnroll, TunePostRAScheduler]>;
 
 def TENSTORRENT_ASCALON_D8 : RISCVProcessorModel<"tt-ascalon-d8",
-                                                 NoSchedModel,
+                                                 TTAscalonD8Model,
                                                  !listconcat(RVA23S64Features,
                                                  [FeatureStdExtSmaia,
                                                   FeatureStdExtSsaia,
