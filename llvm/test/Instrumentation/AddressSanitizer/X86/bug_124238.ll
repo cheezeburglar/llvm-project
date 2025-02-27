@@ -1,7 +1,8 @@
 ; RUN: opt -passes=asan %s -S | FileCheck %s
 
 ;; Punt AddressSanitizer::instrumentMemIntrinsics out for MemIntrinsics
-;; that need write to unsupported registers
+;; that need write to unsupported registers on X86
+;; PR124238: https://www.github.com/llvm/llvm-project/issues/124238
 
 target triple = "x86_64-unknown-linux-gnu"
 
